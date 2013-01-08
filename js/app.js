@@ -13,17 +13,16 @@ $(document).ready(function () {
   *   This means that the label is either copied from another repo or added manually
   * callback: as the name suggests...
   */
-  function listLabels(username, repo, addUncommited, callback){
+  function apiCallListLabels(username, repo, addUncommited, callback){
     $.ajax({
-      type: "GET",
-      dataType: "jsonp",
+      type: 'GET',
       url: 'https://api.github.com/repos/' + username + '/' + repo + '/labels',
       success: function (response) {
         console.log("success: ");
         console.log(response);
         
-        if(response && response.data){
-          var labels = response.data;
+        if(response ){
+          var labels = response;
           for (var i = labels.length - 1; i >= 0; i--) {
             var label = labels[i];
             console.log(label);
@@ -44,16 +43,63 @@ $(document).ready(function () {
     });
   }
 
-  function createLabel(label) {
+  function apiCallCreateLabel(labelObject, callback) {
+    var password = $('#githubPassword').val();
+
     $.ajax({
       type: "POST",
-      url: "https://api.github.com/repos/destan/scripts/labels",
-      data: JSON.stringify(label),
+      url: 'https://api.github.com/repos/' + targetUsername + '/' + targetRepo + '/labels',
+      data: JSON.stringify(labelObject),
       beforeSend: function (xhr) {
-        xhr.setRequestHeader('Authorization', makeBasicAuth(username, password));
+        xhr.setRequestHeader('Authorization', makeBasicAuth(targetUsername, password));
       },
-      success: function (data) {
-        console.log("success: " + data);
+      success: function (response) {
+        console.log("success: ");
+        console.log(response);
+        if(typeof callback == 'function'){
+          callback(response);
+        }
+      }
+    });
+  }
+
+  function apiCallUpdateLabel(labelObject, callback) {
+    var password = $('#githubPassword').val();
+    var originalName = labelObject.originalName;
+    delete labelObject.originalName;
+
+    $.ajax({
+      type: "POST",
+      url: 'https://api.github.com/repos/' + targetUsername + '/' + targetRepo + '/labels' + originalName,
+      data: JSON.stringify(labelObject),
+      beforeSend: function (xhr) {
+        xhr.setRequestHeader('Authorization', makeBasicAuth(targetUsername, password));
+      },
+      success: function (response) {
+        console.log("success: ");
+        console.log(response);
+        if(typeof callback == 'function'){
+          callback(response);
+        }
+      }
+    });
+  }
+
+  function apiCallDeleteLabel(labelObject, callback) {
+    var password = $('#githubPassword').val();
+
+    $.ajax({
+      type: "DELETE",
+      url: 'https://api.github.com/repos/' + targetUsername + '/' + targetRepo + '/labels/' + labelObject.name,
+      beforeSend: function (xhr) {
+        xhr.setRequestHeader('Authorization', makeBasicAuth(targetUsername, password));
+      },
+      success: function (response) {
+        console.log("success: ");
+        console.log(response);
+        if(typeof callback == 'function'){
+          callback(response);
+        }
       }
     });
   }
@@ -68,7 +114,7 @@ $(document).ready(function () {
     var uncommitedSignClass = "";
 
     if(label === undefined || addUncommited){
-      action = ' action="create" ';
+      action = ' action="none" new="true" ';
       uncommitedSignClass = ' uncommited ';
     }
 
@@ -95,12 +141,17 @@ $(document).ready(function () {
 
     newElementEntry.children().filter(':input[orig-val]').change(function(e) {
       
-      if($(this).val() == $(this).attr('orig-val')){
+      if($(this).val() == $(this).attr('orig-val')){//unchanged
         $(this).parent().attr('action', 'none');
         $(this).parent().removeClass('uncommited');
       }
-      else{
-        $(this).parent().attr('action', 'update');
+      else{//changed
+        if($(this).parent().attr('new') == 'true'){
+          $(this).parent().attr('action', 'create');
+        }
+        else{
+          $(this).parent().attr('action', 'update');
+        }
         $(this).parent().addClass('uncommited');
       }
 
@@ -140,7 +191,12 @@ $(document).ready(function () {
           $(el).parent().removeClass('uncommited');
         }
         else{
-          $(el).parent().attr('action', 'update');
+          if($(el).parent().attr('new') == 'true'){
+            $(el).parent().attr('action', 'create');
+          }
+          else{
+            $(el).parent().attr('action', 'update');
+          }
           $(el).parent().addClass('uncommited');
         }
         checkIfAnyActionNeeded();
@@ -179,7 +235,7 @@ $(document).ready(function () {
     if(username && repo){
       clearAllLabels();
 
-      listLabels(username, repo, false, function(response) {
+      apiCallListLabels(username, repo, false, function(response) {
         theButton.button('reset');
       });
     }
@@ -193,7 +249,7 @@ $(document).ready(function () {
     $(this).button('loading');
     var theButton = $(this);// dealing with closure
     clearAllLabels();
-    listLabels(targetUsername, targetRepo, false, function(response) {
+    apiCallListLabels(targetUsername, targetRepo, false, function(response) {
       theButton.button('reset');
     });
   });
@@ -205,7 +261,7 @@ $(document).ready(function () {
     var repo = $('#copyUrl').val().split(':')[1];
 
     if(username && repo){
-      listLabels(username, repo, true, function(response) {
+      apiCallListLabels(username, repo, true, function(response) {
         theButton.button('reset');
       });//set addUncommited to true because those are coming from another repo 
     }
@@ -226,19 +282,24 @@ $(document).ready(function () {
     }
 
     //TODO commit
-    console.log("COMMIT");
-
+    commit(function(response) {
+      theButton.button('reset');
+    });
   });
 
+  /**
+  * Makes a label entry out of a div having the class .label-entry
+  */
   function serializeLabel(jObjectLabelEntry) {
     return {
-      name: jObjectLabelEntry.filter('[name="name"]').val(),
-      color: jObjectLabelEntry.filter('[name="color"]').val() 
+      name: jObjectLabelEntry.children().filter('[name="name"]').val(),
+      color: jObjectLabelEntry.children().filter('[name="color"]').val(),
+      originalName: jObjectLabelEntry.children().filter('[name="name"]').attr('orig-val')
     };
   }
 
   /**
-  * returns true if any change has been made and activates or disactivates comit button accordingly
+  * returns true if any change has been made and activates or disactivates commit button accordingly
   */
   function checkIfAnyActionNeeded() {
     var isNeeded = $('.label-entry:not([action="none"])').length > 0;
@@ -251,6 +312,38 @@ $(document).ready(function () {
     }
 
     return isNeeded;
+  }
+
+  function commit(callback) {
+    //TODO same name check
+
+    //freeze the world
+    // $('#loadingModal').modal({
+    //   keyboard: false,
+    //   backdrop:'static'
+    // });
+
+    //To be deleted
+    $('.label-entry[action="delete"]').each(function(index) {
+      var labelObject = serializeLabel($(this));
+      apiCallDeleteLabel(labelObject);
+    });
+
+    //To be updated
+    $('.label-entry[action="update"]').each(function(index) {
+      var labelObject = serializeLabel($(this));
+      apiCallUpdateLabel(labelObject);
+    });
+
+    //To be created
+    $('.label-entry[action="create"]').each(function(index) {
+      var labelObject = serializeLabel($(this));
+      apiCallCreateLabel(labelObject);
+    });
+
+    if(typeof callback == 'function'){
+      callback();
+    }
   }
 
   /* ========== The rest is BASE64 STUFF ========== */
