@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Github Label Manager</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="legend">
+  <meta name="author" content="github.com/destan">
+
+  <!-- Le styles -->
+  <link href="css/bootstrap.css" rel="stylesheet">
+  <link href="css/bootstrap-responsive.css" rel="stylesheet">
+  <link href="css/colorpicker.css" rel="stylesheet" />
+  <link href="css/app.css" rel="stylesheet" />
+
+  <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+      <![endif]-->
+
+    </head>
+
+    <body>
+      <div class="navbar navbar-fixed-top">
+        <div class="navbar-inner">
+          <a class="brand" href="#">&nbsp;Github Label Manager</a>
+          <ul class="nav">
+            <li class="active"><a href="#">Manage your labels</a></li>
+            <li><a href="http://github.com/destan/github-label-manager">See on Github</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div id="content" class="container">
+
+        <div class="row-fluid">
+          <div class="span4">
+
+            <legend>Manage your Github labels</legend>
+            <form>
+              <input id="targetUrl" type="url" class="input-block" placeholder="username:repo" value="destan:cevirgec">
+              <input id="githubPassword" type="password" class="input-block" placeholder="Password">
+              <span class="help-block">Password is only required for committing not for listing</span>
+              <button id="listLabelsButton" type="button" class="btn btn-block">List labels in this repo</button>
+            </form>
+
+            <div id="optionalCopyContainer" class="well">
+              <button type="button" class="btn btn-block" data-toggle="collapse" data-target="#optionalCopyStuff">Copy an existing repo's labels (Optional)</button>
+              <span class="help-block">You can apply any repository's labels and then change them to meet your needs then apply to your own repository.</span>
+              <div id="optionalCopyStuff" class="collapse">
+                <form class="form-inline">
+                  <input id="copyUrl" type="url" class="input-block" placeholder="username:repo">
+                  <button id="copyFromRepoButton" type="button" class="btn btn-success">Copy</button>
+                </form>
+              </div>
+            </div>
+
+            <button id="commitButton" type="button" class="btn btn-success btn-block btn-large" disabled>Commit changes</button>
+
+          </div>
+
+          <div class="span4">
+            <legend>Labels</legend>
+            <form id="labelsForm" class="form-inline"></form>
+            <button id="addNewLabelEntryButton" type="button" class="btn btn-success btn-block">Add new label</button>
+            <button id="resetButton" type="button" class="btn btn-danger btn-block">Reset labels</button>
+          </div>
+
+          <div class="span4">
+            <legend>Help</legend>
+
+          </div>
+        </div>
+        <br>
+        <br>  
+      </div> <!-- /container -->
+
+    <!-- Le javascript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="js/jquery.js"></script>
+    <script type="text/javascript" src="js/colorpicker.js"></script>
+    <script src="js/bootstrap.js"></script>
+    <script src="js/app.js"></script>
+
+  </body>
+  </html>

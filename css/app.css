@@ -1,0 +1,28 @@
+.color-box input[type="text"]{
+    color: whitesmoke;
+}
+
+.label-entry{
+    padding-bottom: 10px;
+}
+
+.hidden{
+    display: none;
+}
+
+.deleted{
+    position: relative;
+    top: 17px;
+    border-color: #666;
+    width: 300px;
+    margin: 0;
+    z-index: 1;
+}
+
+.uncommited{
+    background-color: gray;
+}
+
+#content{
+    margin-top: 60px;
+}
