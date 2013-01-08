@@ -3,8 +3,17 @@
 $(document).ready(function () {
   var username;
   var password;
+  var targetUsername;
+  var targetRepo;
 
-  function listLabels(username, repo, addUncommited){
+  /**
+  * username: github username <required>
+  * password: github password (cleartext) <required>
+  * addUncommited: boolean, if true indicates that the label is not (yet) a part of the target repo.
+  *   This means that the label is either copied from another repo or added manually
+  * callback: as the name suggests...
+  */
+  function listLabels(username, repo, addUncommited, callback){
     $.ajax({
       type: "GET",
       dataType: "jsonp",
@@ -22,8 +31,15 @@ $(document).ready(function () {
             label.color = label.color.toUpperCase();
             createNewLabelEntry(label, addUncommited);
 
+            //sets target repo indicator text
+            $('#targetRepoIndicator').text(username + "'s " + repo);
+
           }//for
         }//if
+
+        if(typeof callback == 'function'){
+          callback(response);
+        }
       }
     });
   }
@@ -87,6 +103,8 @@ $(document).ready(function () {
         $(this).parent().attr('action', 'update');
         $(this).parent().addClass('uncommited');
       }
+
+      checkIfAnyActionNeeded();
     });
 
     newElementEntry.children().filter('.delete-button').click(function(e) {
@@ -100,19 +118,33 @@ $(document).ready(function () {
           $(this).attr('disabled', 'true');
           $(this).parent().attr('action', 'delete');
         }
+        checkIfAnyActionNeeded();
       }
     });
 
+    //activate color picker on color-box field
     newElementEntry.children().filter('.color-box').ColorPicker({
+      //http://www.eyecon.ro/colorpicker
       color: label.color,
       onSubmit: function(hsb, hex, rgb, el) {
         $(el).val(hex.toUpperCase());
         $(el).ColorPickerHide();
         $(el).css('background-color', '#' + hex);
-      },
-      onChange: function(hsb, hex, rgb) {
-        $(this).val(hex);
-        $(this).css('background-color', '#' + hex);
+
+        //-----------------------------
+        //well here goes the copy-paste because normal binding to 'change' doesn't work
+        // on newElementEntry.children().filter(':input[orig-val]').change(function...
+        // since it is triggered programmatically  
+        if($(el).val() == $(el).attr('orig-val')){
+          $(el).parent().attr('action', 'none');
+          $(el).parent().removeClass('uncommited');
+        }
+        else{
+          $(el).parent().attr('action', 'update');
+          $(el).parent().addClass('uncommited');
+        }
+        checkIfAnyActionNeeded();
+        //-----------------------------
       },
       onBeforeShow: function () {
         $(this).ColorPickerSetColor(this.value);
@@ -132,12 +164,12 @@ $(document).ready(function () {
 
   function clearAllLabels(){
     $('#labelsForm').text('');
+    $('#commitButton').attr('disabled', 'disabled');
   }
 
-  var targetUsername;
-  var targetRepo;
-
   $('#listLabelsButton').click(function(e) {
+    $(this).button('loading');
+    var theButton = $(this);// dealing with closure
     var username = $('#targetUrl').val().split(':')[0];
     var repo = $('#targetUrl').val().split(':')[1];
 
@@ -147,28 +179,55 @@ $(document).ready(function () {
     if(username && repo){
       clearAllLabels();
 
-      listLabels(username, repo);
+      listLabels(username, repo, false, function(response) {
+        theButton.button('reset');
+      });
     }
     else{
       alert("Please follow the format: \n\nusername:repo");
+      theButton.button('reset');
     }
   });
 
   $('#resetButton').click(function(e) {
+    $(this).button('loading');
+    var theButton = $(this);// dealing with closure
     clearAllLabels();
-    listLabels(targetUsername, targetRepo);
+    listLabels(targetUsername, targetRepo, false, function(response) {
+      theButton.button('reset');
+    });
   });
 
   $('#copyFromRepoButton').click(function(e) {
+    $(this).button('loading');
+    var theButton = $(this);// dealing with closure
     var username = $('#copyUrl').val().split(':')[0];
     var repo = $('#copyUrl').val().split(':')[1];
 
     if(username && repo){
-      listLabels(username, repo, true);//set addUncommited to true because those are coming from another repo 
+      listLabels(username, repo, true, function(response) {
+        theButton.button('reset');
+      });//set addUncommited to true because those are coming from another repo 
     }
     else{
       alert("Please follow the format: \n\nusername:repo");
+      theButton.button('reset');
     }
+  });
+
+  $('#commitButton').click(function(e) {
+    $(this).button('loading');
+    var theButton = $(this);// dealing with closure
+    var password = $('#githubPassword').val();
+
+    if(password.trim() == ''){
+      alert('You need to enter your password for repo: ' + targetRepo + ' in order to commit labels.');
+      theButton.button('reset');
+    }
+
+    //TODO commit
+    console.log("COMMIT");
+
   });
 
   function serializeLabel(jObjectLabelEntry) {
@@ -178,9 +237,20 @@ $(document).ready(function () {
     };
   }
 
-  function checkChanges() {
-    //TODO
-      //$('.label-entry:not([disabled="disabled"])')
+  /**
+  * returns true if any change has been made and activates or disactivates comit button accordingly
+  */
+  function checkIfAnyActionNeeded() {
+    var isNeeded = $('.label-entry:not([action="none"])').length > 0;
+    
+    if(isNeeded){
+      $('#commitButton').removeAttr('disabled');
+    }
+    else{
+      $('#commitButton').attr('disabled', 'disabled'); 
+    }
+
+    return isNeeded;
   }
 
   /* ========== The rest is BASE64 STUFF ========== */

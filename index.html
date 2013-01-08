@@ -41,7 +41,7 @@
               <input id="targetUrl" type="url" class="input-block" placeholder="username:repo" value="destan:cevirgec">
               <input id="githubPassword" type="password" class="input-block" placeholder="Password">
               <span class="help-block">Password is only required for committing not for listing</span>
-              <button id="listLabelsButton" type="button" class="btn btn-block">List labels in this repo</button>
+              <button id="listLabelsButton" type="button" class="btn btn-block" data-loading-text="Loading...">List labels in this repo</button>
             </form>
 
             <div id="optionalCopyContainer" class="well">
@@ -50,20 +50,26 @@
               <div id="optionalCopyStuff" class="collapse">
                 <form class="form-inline">
                   <input id="copyUrl" type="url" class="input-block" placeholder="username:repo">
-                  <button id="copyFromRepoButton" type="button" class="btn btn-success">Copy</button>
+                  <button id="copyFromRepoButton" type="button" class="btn btn-success"  data-loading-text="Copying...">Copy</button>
                 </form>
               </div>
             </div>
 
-            <button id="commitButton" type="button" class="btn btn-success btn-block btn-large" disabled>Commit changes</button>
+            <button id="commitButton" type="button" class="btn btn-success btn-block btn-large" disabled data-loading-text="Commiting...">Commit changes</button>
 
+            <br>
+            
+            <div class="well">
+              <label>Using repo:</label>
+              <span id="targetRepoIndicator" class="input uneditable-input">Not using any yet!</span>
+            </div>
           </div>
 
           <div class="span4">
             <legend>Labels</legend>
             <form id="labelsForm" class="form-inline"></form>
             <button id="addNewLabelEntryButton" type="button" class="btn btn-success btn-block">Add new label</button>
-            <button id="resetButton" type="button" class="btn btn-danger btn-block">Reset labels</button>
+            <button id="resetButton" type="button" class="btn btn-danger btn-block" data-loading-text="Resetting...">Reset labels</button>
           </div>
 
           <div class="span4">
