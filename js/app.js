@@ -49,11 +49,11 @@ $(document).ready(function () {
   function createNewLabelEntry(label, addUncommited) {
 
     var action = ' action="none" ';
-    var uncommitedSign = "";
+    var uncommitedSignClass = "";
 
     if(label === undefined || addUncommited){
       action = ' action="create" ';
-      uncommitedSign = ' uncommited ';
+      uncommitedSignClass = ' uncommited ';
     }
 
     if(label === undefined){
@@ -67,7 +67,7 @@ $(document).ready(function () {
     var origColorVal = ' orig-val="' + label.color + '"';
 
     var newElementEntry = $('\
-      <div class="label-entry ' + uncommitedSign + '" ' + action + '>\
+      <div class="label-entry ' + uncommitedSignClass + '" ' + action + '>\
         <input name="name" type="text" class="input-small" placeholder="Name" value="' + label.name + '" ' + origNameVal + '>\
         <span class="sharp-sign">#</span>\
         <input name="color" type="text" class="input-small color-box" placeholder="Color"  value="' + label.color + '" ' + origColorVal + '>\

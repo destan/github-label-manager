@@ -19,8 +19,9 @@
     z-index: 1;
 }
 
-.uncommited{
-    background-color: gray;
+.uncommited:before{
+    content: "* ";
+    margin-left: -9px;
 }
 
 #content{
