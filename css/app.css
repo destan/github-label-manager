@@ -26,6 +26,7 @@ body{
 .uncommited:before{
     content: "* ";
     margin-left: -9px;
+    float: left;
 }
 
 #content{

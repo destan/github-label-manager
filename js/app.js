@@ -101,6 +101,9 @@ $(document).ready(function () {
           callback(response);
         }
         writeLog('Created label: ' + labelObject.name);
+      },
+      error: function(jqXHR, textStatus, errorThrown ) {
+        writeLog('Creation of label failed for: ' + labelObject.name + ' Error: ' + errorThrown);
       }
     });
   }
@@ -120,6 +123,9 @@ $(document).ready(function () {
           callback(response);
         }
         writeLog('Updated label: ' + originalName + ' => ' + labelObject.name);
+      },
+      error: function(jqXHR, textStatus, errorThrown ) {
+        writeLog('Update of label failed for: ' + originalName + ' Error: ' + errorThrown);
       }
     });
   }
@@ -135,6 +141,9 @@ $(document).ready(function () {
           callback(response);
         }
         writeLog('Deleted label: ' + labelObject.name);
+      },
+      error: function(jqXHR, textStatus, errorThrown ) {
+        writeLog('Deletion of label failed for: ' + labelObject.name + ' Error: ' + errorThrown);
       }
     });
   }
@@ -194,6 +203,7 @@ $(document).ready(function () {
       return;
     });
 
+    //Delete button
     newElementEntry.children().filter('.delete-button').click(function(e) {
       if(confirm('Really want to delete this?\n\nNote that this action only removes the label from this list not from Github.')){
         if($(this).parent().attr('new') == 'true'){
@@ -202,9 +212,31 @@ $(document).ready(function () {
         else{
           $(this).parent().prepend('<hr class="deleted">');
           $(this).siblings().attr('disabled', 'true');
-          $(this).attr('disabled', 'true');
+          // $(this).attr('disabled', 'true');
           $(this).parent().attr('action', 'delete');
         }
+
+        //add recover button
+        var recoverButton = $('<a class="btn" href="#"><i class="icon-refresh"></i></a>');
+        recoverButton.click(function() {
+          debugger;
+          //recover label-element's deleted state
+          $(this).siblings().filter('hr').remove();
+          $(this).siblings().removeAttr('disabled');
+          if( $(this).siblings().filter('[name="name"]').attr('orig-val') == $(this).siblings().filter('[name="name"]').val() &&
+              $(this).siblings().filter('[name="color"]').attr('orig-val') == $(this).siblings().filter('[name="color"]').val() ){
+
+            $(this).parent().attr('action', 'none');
+          }
+          else{
+            $(this).parent().attr('action', 'update');
+          }
+          $(this).remove();
+          checkIfAnyActionNeeded();
+        });//end recover button's click
+
+        $(this).parent().append(recoverButton);
+
         checkIfAnyActionNeeded();
         return;
       }

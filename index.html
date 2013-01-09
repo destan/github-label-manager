@@ -37,7 +37,7 @@
           <div class="span4">
 
             <legend>Manage your Github labels</legend>
-            <form>
+            <form autocomplete="on">
               <input id="targetUrl" type="url" class="input-block" placeholder="username:repo">
               <input id="githubPassword" type="password" class="input-block" placeholder="Password">
               <span class="help-block">Password is only required for committing not for listing</span>
@@ -50,7 +50,7 @@
               <div id="optionalCopyStuff" class="collapse">
                 <form class="form-inline">
                   <input id="copyUrl" type="url" class="input-block" placeholder="username:repo">
-                  <button id="copyFromRepoButton" type="button" class="btn btn-success"  data-loading-text="Copying...">Copy</button>
+                  <button id="copyFromRepoButton" type="button" class="btn btn-info"  data-loading-text="Copying...">Copy</button>
                   <span class="help-block">Can be any repo, no password required for copying.</span>
                 </form>
               </div>
@@ -75,6 +75,7 @@
 
           <div class="span4">
             <legend>Help</legend>
+            <h4>To make it work</h4>
             <p>First of all, this website works by making cross-site requests to Github's api <code>api.github.com</code> 
 and there is no other call is made to anywhere else.</p>
             <h4>Disable same-origin-policy</h4>
@@ -94,14 +95,28 @@ meh...
 Ask google
             </pre>
             <!-- Accordion stuff -->
-            <div class="accordion" id="accordion2">
+            <div class="accordion" id="accordionGroup">
               <div class="accordion-group">
                 <div class="accordion-heading">
-                  <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion2" href="#collapse1">
+                  <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordionGroup" href="#collapse0">
+                    Validation and errors
+                  </a>
+                </div>
+                <div id="collapse0" class="accordion-body collapse in">
+                  <div class="accordion-inner">
+                    There is not much validation and error prevention so you should check your changes before commiting.<br>
+                    <code>Unprocessable Entity</code> usually means that you tried to commit a duplicate label name.
+                  </div>
+                </div>
+              </div>
+
+              <div class="accordion-group">
+                <div class="accordion-heading">
+                  <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordionGroup" href="#collapse1">
                     Is my password safe?
                   </a>
                 </div>
-                <div id="collapse1" class="accordion-body collapse in">
+                <div id="collapse1" class="accordion-body collapse">
                   <div class="accordion-inner">
                     This website authenticates to Github api via <code>HTTP Basic Authentication</code> but all api calls are done over <code>SSL</code> so your password is safe. More on <a href="http://en.wikipedia.org/wiki/Basic_access_authentication" target="_blank">Wikipedia</a>.
                     <br>
@@ -112,7 +127,7 @@ Ask google
 
               <div class="accordion-group">
                 <div class="accordion-heading">
-                  <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion2" href="#collapse2">
+                  <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordionGroup" href="#collapse2">
                     What's that same-origin-policy stuff?
                   </a>
                 </div>
@@ -125,7 +140,7 @@ Ask google
 
               <div class="accordion-group">
                 <div class="accordion-heading">
-                  <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion2" href="#collapse3">
+                  <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordionGroup" href="#collapse3">
                     What this thing does anyway?
                   </a>
                 </div>
