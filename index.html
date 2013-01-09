@@ -44,6 +44,7 @@
           <a class="brand" href="#">&nbsp;Github Label Manager</a>
           <ul class="nav">
             <li class="active"><a href="#">Manage your labels</a></li>
+            <li><a href="#whatForModal" data-toggle="modal">What this thing does anyway?</a></li>
           </ul>
         </div>
       </div>
@@ -161,19 +162,6 @@ Ask google
                 </div>
               </div>
 
-              <div class="accordion-group">
-                <div class="accordion-heading">
-                  <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordionGroup" href="#collapse3">
-                    What this thing does anyway?
-                  </a>
-                </div>
-                <div id="collapse3" class="accordion-body collapse">
-                  <div class="accordion-inner">
-                    You can edit, add and delete labels for your Github repos. Yes, not really much different from Github itself. But
-                    the thing is you can do those as bunches here. The main thing is that you can also copy another repos's labels into yours with or without some modifications.
-                  </div>
-                </div>
-              </div>
             </div>
             <!-- Accordion stuff ends -->
           </div>
@@ -196,6 +184,31 @@ Ask google
       </div>
       <div class="modal-body">
         <p>Commiting…</p>
+      </div>
+    </div>
+
+    <div id="whatForModal" class="modal hide fade">
+      <div class="modal-header">
+        <h3>What this thing does anyway?</h3>
+      </div>
+      <div class="modal-body">
+        <strong>Short:</strong>
+        <p>Helps you to copy labels in any Github repository into one of yours.</p>
+
+        <strong>Long:</strong>
+        <p>This is helpful when you create a new repo on Github. When you create your labels in one of your repos you probably get used to them and would want them in your brand new repo as well. Ths website avoids the burden of manualy creating labels on Github.</p>
+
+        <p>You don't have to copy labels from some repo, you can just add/remove/edit your repo's labels via here, and commit all the changes at once.</p>
+
+        <strong>Usage</strong>
+        <ul>
+          <li>List your repo's current label</li>
+          <li>Copy (append) some other repos' labels into your current labels (optional)</li>
+          <li>Edit the labels list as you wish</li>
+          <li>Commit your changes</li>
+        </ul>
+        <p>Yes, not really much different from Github itself. But
+                    the thing is you can do those as bunches here. The main thing is that you can also copy another repos's labels into yours with or without some modifications.</p>
       </div>
     </div>
   </body>
