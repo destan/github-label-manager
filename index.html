@@ -38,9 +38,14 @@
 
             <legend>Manage your Github labels</legend>
             <form autocomplete="on">
-              <input id="targetUrl" type="url" class="input-block" placeholder="username:repo">
+              <input id="targetUrl" type="url" class="input-block" placeholder="owner:repo" onchange="copyToBelow(this)">
+              <script type="text/javascript">
+                function copyToBelow(element) {
+                  document.getElementById('targetUsername').value = element.value.split(':')[0];
+                }
+              </script>
+              <input id="targetUsername" type="url" class="input-block" placeholder="username">
               <input id="githubPassword" type="password" class="input-block" placeholder="Password">
-              <span class="help-block">Password is only required for committing not for listing</span>
               <button id="listLabelsButton" type="button" class="btn btn-block" data-loading-text="Loading...">List labels in this repo</button>
             </form>
 
@@ -61,8 +66,8 @@
             <br>
             
             <div class="well">
-              <label>Using repo:</label>
-              <span id="targetRepoIndicator" class="input uneditable-input">Not using any yet!</span>
+              <legend>Which repo is in use</legend>
+              <pre><span id="targetIndicator">Not using any yet!</span></pre>
             </div>
           </div>
 
@@ -75,7 +80,7 @@
 
           <div class="span4">
             <legend>Help</legend>
-            <h4>To make it work</h4>
+            <h4>Preface</h4>
             <p>First of all, this website works by making cross-site requests to Github's api <code>api.github.com</code> 
 and there is no other call is made to anywhere else.</p>
             <code>You can download this website, it also works offline.</code>

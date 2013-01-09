@@ -5,6 +5,7 @@ $(document).ready(function () {
   var password;
   var targetUsername;
   var targetRepo;
+  var targetOwner;
   var isLoadingShown = false;
   var loadingSemaphore = (function() {
     var count = 0;
@@ -75,8 +76,8 @@ $(document).ready(function () {
             label.color = label.color.toUpperCase();
             createNewLabelEntry(label, addUncommited);
 
-            //sets target repo indicator text
-            $('#targetRepoIndicator').text(username + "'s " + repo);
+            //sets target indicator text
+            $('#targetIndicator').html('Using <strong>' + targetOwner + "</strong>'s <strong>" + targetRepo + '</strong> as <strong>' + targetUsername + '</strong>');
 
           }//for
         }//if
@@ -92,7 +93,7 @@ $(document).ready(function () {
 
     $.ajax({
       type: "POST",
-      url: 'https://api.github.com/repos/' + targetUsername + '/' + targetRepo + '/labels',
+      url: 'https://api.github.com/repos/' + targetOwner + '/' + targetRepo + '/labels',
       data: JSON.stringify(labelObject),
       success: function (response) {
         console.log("success: ");
@@ -114,7 +115,7 @@ $(document).ready(function () {
 
     $.ajax({
       type: "PATCH",
-      url: 'https://api.github.com/repos/' + targetUsername + '/' + targetRepo + '/labels/' + originalName,
+      url: 'https://api.github.com/repos/' + targetOwner + '/' + targetRepo + '/labels/' + originalName,
       data: JSON.stringify(labelObject),
       success: function (response) {
         console.log("success: ");
@@ -133,7 +134,7 @@ $(document).ready(function () {
   function apiCallDeleteLabel(labelObject, callback) {
     $.ajax({
       type: "DELETE",
-      url: 'https://api.github.com/repos/' + targetUsername + '/' + targetRepo + '/labels/' + labelObject.name,
+      url: 'https://api.github.com/repos/' + targetOwner + '/' + targetRepo + '/labels/' + labelObject.name,
       success: function (response) {
         console.log("success: ");
         console.log(response);
@@ -297,16 +298,14 @@ function clearAllLabels(){
 $('#listLabelsButton').click(function(e) {
   $(this).button('loading');
     var theButton = $(this);// dealing with closure
-    var username = $('#targetUrl').val().split(':')[0];
-    var repo = $('#targetUrl').val().split(':')[1];
+    targetOwner = $('#targetUrl').val().split(':')[0];
+    targetRepo = $('#targetUrl').val().split(':')[1];
+    targetUsername = $('#targetUsername').val();
 
-    targetUsername = username;
-    targetRepo = repo;
-
-    if(username && repo){
+    if(targetOwner && targetRepo){
       clearAllLabels();
 
-      apiCallListLabels(username, repo, false, function(response) {
+      apiCallListLabels(targetOwner, targetRepo, false, function(response) {
         theButton.button('reset');
       });
     }
@@ -320,7 +319,7 @@ $('#resetButton').click(function(e) {
   $(this).button('loading');
     var theButton = $(this);// dealing with closure
     clearAllLabels();
-    apiCallListLabels(targetUsername, targetRepo, false, function(response) {
+    apiCallListLabels(targetOwner, targetRepo, false, function(response) {
       theButton.button('reset');
     });
   });
@@ -354,6 +353,28 @@ $('#commitButton').click(function(e) {
     }
 
     commit();
+  });
+
+  //Enable popovers 
+  $('#targetUrl').popover({
+    title: 'Example',
+    content: '<code>github.com/destan/cevirgec</code> Then use <code>destan:cevirgec</code><br><em>Note that owner can also be an organization name.</em>',
+    trigger: 'hover',
+    html: true
+  });
+
+  $('#targetUsername').popover({
+    title: "Why 'username' again?",
+    content: "To let you modify a repo which belongs to another user or an organization. For example the repo maybe <code>my-organization:the-app</code> but username is <code>cylon</code>",
+    trigger: "hover",
+    html: true
+  });
+
+  $('#githubPassword').popover({
+    title: "My password for what?",
+    content: "Password is only required for committing. It won't be required until you try to commit something.",
+    trigger: "hover",
+    html: true
   });
 
   /**
@@ -426,7 +447,7 @@ $('#commitButton').click(function(e) {
 
     //reload labels after changes
     clearAllLabels();
-    apiCallListLabels(targetUsername, targetRepo);
+    apiCallListLabels(targetOwner, targetRepo);
   });
 
   $('#loadingModal').on('show', function () {
