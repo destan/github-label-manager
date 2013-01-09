@@ -32,7 +32,7 @@ $(document).ready(function () {
 
   $.ajaxSetup({
     cache: false,
-    complete: function() {
+    complete: function(jqXHR, textStatus) {
       loadingSemaphore.release();
       if(isLoadingShown && loadingSemaphore.isLocked() === false){
         writeLog("All operations are done.");
