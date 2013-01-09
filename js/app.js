@@ -5,6 +5,48 @@ $(document).ready(function () {
   var password;
   var targetUsername;
   var targetRepo;
+  var isLoadingShown = false;
+  var loadingSemaphore = (function() {
+    var count = 0;
+
+    return {
+      acquire : function() {
+        console.log("acq " + count);
+        ++count;
+        return null;
+      },
+      release : function() {
+        console.log("rel " + count);
+        if(count <= 0){
+          throw "Semaphore inconsistency";
+        }
+
+        --count;
+        return null;
+      },
+      isLocked : function() {
+        return count > 0;
+      }
+    };
+  }());
+
+  $.ajaxSetup({
+    cache: false,
+    complete: function() {
+      loadingSemaphore.release();
+      if(isLoadingShown && loadingSemaphore.isLocked() === false){
+        writeLog("All operations are done.");
+
+        //add close button
+        $('#loadingModal').append('<div class="modal-footer"><button class="btn" data-dismiss="modal" aria-hidden="true">Close');
+      }
+    },
+    beforeSend: function(xhr) {
+      var password = $('#githubPassword').val();
+      loadingSemaphore.acquire();
+      xhr.setRequestHeader('Authorization', makeBasicAuth(targetUsername, password));
+    }
+  });
 
   /**
   * username: github username <required>
@@ -17,6 +59,9 @@ $(document).ready(function () {
     $.ajax({
       type: 'GET',
       url: 'https://api.github.com/repos/' + username + '/' + repo + '/labels',
+      beforeSend: function(xhr) {
+        loadingSemaphore.acquire();
+      },
       success: function (response) {
         console.log("success: ");
         console.log(response);
@@ -44,62 +89,52 @@ $(document).ready(function () {
   }
 
   function apiCallCreateLabel(labelObject, callback) {
-    var password = $('#githubPassword').val();
 
     $.ajax({
       type: "POST",
       url: 'https://api.github.com/repos/' + targetUsername + '/' + targetRepo + '/labels',
       data: JSON.stringify(labelObject),
-      beforeSend: function (xhr) {
-        xhr.setRequestHeader('Authorization', makeBasicAuth(targetUsername, password));
-      },
       success: function (response) {
         console.log("success: ");
         console.log(response);
         if(typeof callback == 'function'){
           callback(response);
         }
+        writeLog('Created label: ' + labelObject.name);
       }
     });
   }
 
   function apiCallUpdateLabel(labelObject, callback) {
-    var password = $('#githubPassword').val();
     var originalName = labelObject.originalName;
     delete labelObject.originalName;
 
     $.ajax({
-      type: "POST",
-      url: 'https://api.github.com/repos/' + targetUsername + '/' + targetRepo + '/labels' + originalName,
+      type: "PATCH",
+      url: 'https://api.github.com/repos/' + targetUsername + '/' + targetRepo + '/labels/' + originalName,
       data: JSON.stringify(labelObject),
-      beforeSend: function (xhr) {
-        xhr.setRequestHeader('Authorization', makeBasicAuth(targetUsername, password));
-      },
       success: function (response) {
         console.log("success: ");
         console.log(response);
         if(typeof callback == 'function'){
           callback(response);
         }
+        writeLog('Updated label: ' + originalName + ' => ' + labelObject.name);
       }
     });
   }
 
   function apiCallDeleteLabel(labelObject, callback) {
-    var password = $('#githubPassword').val();
-
     $.ajax({
       type: "DELETE",
       url: 'https://api.github.com/repos/' + targetUsername + '/' + targetRepo + '/labels/' + labelObject.name,
-      beforeSend: function (xhr) {
-        xhr.setRequestHeader('Authorization', makeBasicAuth(targetUsername, password));
-      },
       success: function (response) {
         console.log("success: ");
         console.log(response);
         if(typeof callback == 'function'){
           callback(response);
         }
+        writeLog('Deleted label: ' + labelObject.name);
       }
     });
   }
@@ -130,17 +165,17 @@ $(document).ready(function () {
 
     var newElementEntry = $('\
       <div class="label-entry ' + uncommitedSignClass + '" ' + action + '>\
-        <input name="name" type="text" class="input-small" placeholder="Name" value="' + label.name + '" ' + origNameVal + '>\
-        <span class="sharp-sign">#</span>\
-        <input name="color" type="text" class="input-small color-box" placeholder="Color"  value="' + label.color + '" ' + origColorVal + '>\
-        <button type="button" class="btn btn-danger delete-button">Delete</button>\
+      <input name="name" type="text" class="input-small" placeholder="Name" value="' + label.name + '" ' + origNameVal + '>\
+      <span class="sharp-sign">#</span>\
+      <input name="color" type="text" class="input-small color-box" placeholder="Color"  value="' + label.color + '" ' + origColorVal + '>\
+      <button type="button" class="btn btn-danger delete-button">Delete</button>\
       </div>\
-    ');
+      ');
 
     newElementEntry.children().filter('.color-box').css('background-color', '#' + label.color);
 
     newElementEntry.children().filter(':input[orig-val]').change(function(e) {
-      
+
       if($(this).val() == $(this).attr('orig-val')){//unchanged
         $(this).parent().attr('action', 'none');
         $(this).parent().removeClass('uncommited');
@@ -156,11 +191,12 @@ $(document).ready(function () {
       }
 
       checkIfAnyActionNeeded();
+      return;
     });
 
     newElementEntry.children().filter('.delete-button').click(function(e) {
       if(confirm('Really want to delete this?\n\nNote that this action only removes the label from this list not from Github.')){
-        if($(this).parent().attr('action') == 'create'){
+        if($(this).parent().attr('new') == 'true'){
           $(this).parent().remove();
         }
         else{
@@ -170,6 +206,7 @@ $(document).ready(function () {
           $(this).parent().attr('action', 'delete');
         }
         checkIfAnyActionNeeded();
+        return;
       }
     });
 
@@ -200,31 +237,33 @@ $(document).ready(function () {
           $(el).parent().addClass('uncommited');
         }
         checkIfAnyActionNeeded();
+        return;
         //-----------------------------
       },
       onBeforeShow: function () {
         $(this).ColorPickerSetColor(this.value);
       }
     })
-    .bind('keyup', function(){
-      $(this).ColorPickerSetColor(this.value);
-      $(this).css('background-color', '#' + this.value);
-    });
+.bind('keyup', function(){
+  $(this).ColorPickerSetColor(this.value);
+  $(this).css('background-color', '#' + this.value);
+});
 
-    $('#labelsForm').append(newElementEntry);
-  }
+$('#labelsForm').append(newElementEntry);
+}
 
-  $('#addNewLabelEntryButton').click(function(e) {
-    createNewLabelEntry();
-  });
+$('#addNewLabelEntryButton').click(function(e) {
+  createNewLabelEntry();
+});
 
-  function clearAllLabels(){
-    $('#labelsForm').text('');
-    $('#commitButton').attr('disabled', 'disabled');
-  }
+function clearAllLabels(){
+  $('#labelsForm').text('');
+  $('#commitButton').text('Commit changes');
+  $('#commitButton').attr('disabled', 'disabled');
+}
 
-  $('#listLabelsButton').click(function(e) {
-    $(this).button('loading');
+$('#listLabelsButton').click(function(e) {
+  $(this).button('loading');
     var theButton = $(this);// dealing with closure
     var username = $('#targetUrl').val().split(':')[0];
     var repo = $('#targetUrl').val().split(':')[1];
@@ -245,8 +284,8 @@ $(document).ready(function () {
     }
   });
 
-  $('#resetButton').click(function(e) {
-    $(this).button('loading');
+$('#resetButton').click(function(e) {
+  $(this).button('loading');
     var theButton = $(this);// dealing with closure
     clearAllLabels();
     apiCallListLabels(targetUsername, targetRepo, false, function(response) {
@@ -254,8 +293,8 @@ $(document).ready(function () {
     });
   });
 
-  $('#copyFromRepoButton').click(function(e) {
-    $(this).button('loading');
+$('#copyFromRepoButton').click(function(e) {
+  $(this).button('loading');
     var theButton = $(this);// dealing with closure
     var username = $('#copyUrl').val().split(':')[0];
     var repo = $('#copyUrl').val().split(':')[1];
@@ -271,20 +310,18 @@ $(document).ready(function () {
     }
   });
 
-  $('#commitButton').click(function(e) {
-    $(this).button('loading');
+$('#commitButton').click(function(e) {
+  $(this).button('loading');
     var theButton = $(this);// dealing with closure
     var password = $('#githubPassword').val();
 
     if(password.trim() == ''){
       alert('You need to enter your password for repo: ' + targetRepo + ' in order to commit labels.');
       theButton.button('reset');
+      return;
     }
 
-    //TODO commit
-    commit(function(response) {
-      theButton.button('reset');
-    });
+    commit();
   });
 
   /**
@@ -306,6 +343,7 @@ $(document).ready(function () {
     
     if(isNeeded){
       $('#commitButton').removeAttr('disabled');
+      $('#commitButton').removeClass('disabled');
     }
     else{
       $('#commitButton').attr('disabled', 'disabled'); 
@@ -314,14 +352,14 @@ $(document).ready(function () {
     return isNeeded;
   }
 
-  function commit(callback) {
+  function commit() {
     //TODO same name check
 
     //freeze the world
-    // $('#loadingModal').modal({
-    //   keyboard: false,
-    //   backdrop:'static'
-    // });
+    $('#loadingModal').modal({
+      keyboard: false,
+      backdrop:'static'
+    });
 
     //To be deleted
     $('.label-entry[action="delete"]').each(function(index) {
@@ -340,11 +378,28 @@ $(document).ready(function () {
       var labelObject = serializeLabel($(this));
       apiCallCreateLabel(labelObject);
     });
-
-    if(typeof callback == 'function'){
-      callback();
-    }
   }
+
+  function writeLog(string) {
+    $('#loadingModal > .modal-body').append(string + '<br>');
+  }
+
+  $('#loadingModal').on('hide', function () {
+    isLoadingShown = false;
+
+    //reset modal
+    $('#loadingModal > .modal-body').text('');
+    $('#loadingModal > .modal-body').append('<p>Commiting...');
+    $('#loadingModal > .modal-footer').remove();
+
+    //reload labels after changes
+    clearAllLabels();
+    apiCallListLabels(targetUsername, targetRepo);
+  });
+
+  $('#loadingModal').on('show', function () {
+    isLoadingShown = true;
+  });
 
   /* ========== The rest is BASE64 STUFF ========== */
   var Base64 = {
