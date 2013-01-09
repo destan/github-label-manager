@@ -74,7 +74,69 @@
 
           <div class="span4">
             <legend>Help</legend>
+            <p>First of all, this website works by making cross-site requests to Github's api <code>api.github.com</code> 
+and there is no other call is made to anywhere else.</p>
+            <h4>Disable same-origin-policy</h4>
+            <p>You need to disable same-origin-policy restriction of your browser. Note that this is a temporary action and you can take it back once you are done with this website.</p>
+            <pre>
+<strong>=== How to disable same-origin-policy ===</strong>
+<strong>Chrome:</strong>
+open terminal/console and execute this:
+<code>chromium-browser --disable-web-security</code>
+<em>Well if you are on Windows you may need to use <code>chrome.exe</code> instead</em>
+<strong>Firefox:</strong>
+Type this to url bar: <code>about:config</code>
+Then find <code>security.fileuri.strict_origin_policy</code> and make it <code>false</code>
+<strong>IE:</strong>
+meh...
+<strong>Others:</strong>
+Ask google
+            </pre>
+            <!-- Accordion stuff -->
+            <div class="accordion" id="accordion2">
+              <div class="accordion-group">
+                <div class="accordion-heading">
+                  <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion2" href="#collapse1">
+                    Is my password safe?
+                  </a>
+                </div>
+                <div id="collapse1" class="accordion-body collapse in">
+                  <div class="accordion-inner">
+                    This website authenticates to Github api via <code>HTTP Basic Authentication</code> but all api calls are done over <code>SSL</code> so your password is safe. More on <a href="http://en.wikipedia.org/wiki/Basic_access_authentication" target="_blank">Wikipedia</a>.
+                    <br>
+                    Note that your password is only sent to Github and and sent encrypted.
+                  </div>
+                </div>
+              </div>
 
+              <div class="accordion-group">
+                <div class="accordion-heading">
+                  <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion2" href="#collapse2">
+                    What's that same-origin-policy stuff?
+                  </a>
+                </div>
+                <div id="collapse2" class="accordion-body collapse">
+                  <div class="accordion-inner">
+                    Well, it is complicated... Interested? Then: <a href="http://en.wikipedia.org/wiki/Same_origin_policy" target="_blank">Wikipedia</a>
+                  </div>
+                </div>
+              </div>
+
+              <div class="accordion-group">
+                <div class="accordion-heading">
+                  <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion2" href="#collapse3">
+                    What this thing does anyway?
+                  </a>
+                </div>
+                <div id="collapse3" class="accordion-body collapse">
+                  <div class="accordion-inner">
+                    You can edit, add and delete labels for your Github repos. Yes, not really much different from Github itself. But
+                    the thing is you can do those as bunches here. The main thing is that you can also copy another repos's labels into yours with or without some modifications.
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- Accordion stuff ends -->
           </div>
         </div>
         <br>
