@@ -1,3 +1,7 @@
+body{
+    background-color: #fcfcfc;
+}
+
 .color-box input[type="text"]{
     color: whitesmoke;
 }
