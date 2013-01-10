@@ -67,11 +67,12 @@ $(document).ready(function () {
   /**
   * username: github username <required>
   * password: github password (cleartext) <required>
-  * addUncommited: boolean, if true indicates that the label is not (yet) a part of the target repo.
-  *   This means that the label is either copied from another repo or added manually
+  * mode: 
+  *       'list':
+  *       'copy':
   * callback: as the name suggests...
   */
-  function apiCallListLabels(username, repo, addUncommited, callback){
+  function apiCallListLabels(username, repo, mode, callback){
     $.ajax({
       type: 'GET',
       url: 'https://api.github.com/repos/' + username + '/' + repo + '/labels',
@@ -89,7 +90,7 @@ $(document).ready(function () {
             console.log(label);
 
             label.color = label.color.toUpperCase();
-            createNewLabelEntry(label, addUncommited);
+            createNewLabelEntry(label, mode);
 
             //sets target indicator text
             $('#targetIndicator').html('Using <strong>' + targetOwner + "</strong>'s <strong>" + targetRepo + '</strong> as <strong>' + targetUsername + '</strong>');
@@ -168,17 +169,17 @@ $(document).ready(function () {
     return "Basic " + Base64.encode(username + ":" + password);
   }
 
-  function createNewLabelEntry(label, addUncommited) {
+  function createNewLabelEntry(label, mode) {
 
     var action = ' action="none" ';
     var uncommitedSignClass = "";
 
-    if(label === undefined || addUncommited){
-      action = ' action="none" new="true" ';
+    if(mode === 'copy' || mode === 'new'){
+      action = ' action="create" new="true" ';
       uncommitedSignClass = ' uncommited ';
     }
 
-    if(label === undefined){
+    if(label === undefined || label === null){
       label = {
         name: "",
         color: ""
@@ -301,7 +302,7 @@ $('#labelsForm').append(newElementEntry);
 }
 
 $('#addNewLabelEntryButton').click(function(e) {
-  createNewLabelEntry();
+  createNewLabelEntry(null, 'new');
 });
 
 function clearAllLabels(){
@@ -320,7 +321,7 @@ $('#listLabelsButton').click(function(e) {
     if(targetOwner && targetRepo){
       clearAllLabels();
 
-      apiCallListLabels(targetOwner, targetRepo, false, function(response) {
+      apiCallListLabels(targetOwner, targetRepo, 'list', function(response) {
         theButton.button('reset');
       });
     }
@@ -334,7 +335,7 @@ $('#resetButton').click(function(e) {
   $(this).button('loading');
     var theButton = $(this);// dealing with closure
     clearAllLabels();
-    apiCallListLabels(targetOwner, targetRepo, false, function(response) {
+    apiCallListLabels(targetOwner, targetRepo, 'list', function(response) {
       theButton.button('reset');
     });
   });
@@ -346,7 +347,7 @@ $('#copyFromRepoButton').click(function(e) {
     var repo = $('#copyUrl').val().split(':')[1];
 
     if(username && repo){
-      apiCallListLabels(username, repo, true, function(response) {
+      apiCallListLabels(username, repo, 'copy', function(response) {
         theButton.button('reset');
       });//set addUncommited to true because those are coming from another repo 
     }
@@ -462,7 +463,7 @@ $('#commitButton').click(function(e) {
 
     //reload labels after changes
     clearAllLabels();
-    apiCallListLabels(targetOwner, targetRepo);
+    apiCallListLabels(targetOwner, targetRepo, 'list');
   });
 
   $('#loadingModal').on('show', function () {
