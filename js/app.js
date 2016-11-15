@@ -76,9 +76,6 @@ $(document).ready(function () {
     $.ajax({
       type: 'GET',
       url: 'https://api.github.com/repos/' + username + '/' + repo + '/labels',
-      beforeSend: function(xhr) {
-        loadingSemaphore.acquire();
-      },
       success: function (response) {
         console.log("success: ");
         console.log(response);
