@@ -1,4 +1,4 @@
-<!--   
+<!--
   This file is part of github-label-manager.
 
   github-label-manager is free software: you can redistribute it and/or modify
@@ -82,7 +82,7 @@
             <button id="commitButton" type="button" class="btn btn-success btn-block btn-large" disabled data-loading-text="Commiting...">Commit changes</button>
 
             <br>
-            
+
             <div class="well">
               <legend>Which repo is in use</legend>
               <pre><span id="targetIndicator">Not using any yet!</span></pre>
@@ -99,25 +99,10 @@
           <div class="span4">
             <legend>Help</legend>
             <h4>Preface</h4>
-            <p>First of all, this website works by making cross-site requests to Github's api <code>api.github.com</code> 
+            <p>First of all, this website works by making cross-site requests to Github's api <code>api.github.com</code>
 and there is no other call is made to anywhere else.</p>
             <code>You can download this website, it also works offline.</code>
-            <h4>Disable same-origin-policy</h4>
-            <p>You need to disable same-origin-policy restriction of your browser. Note that this is a temporary action and you can take it back once you are done with this website.</p>
-            <pre>
-<strong>=== How to disable same-origin-policy ===</strong>
-<strong>Chrome:</strong>
-open terminal/console and execute this:
-<code>chromium-browser --disable-web-security</code>
-<em>Well if you are on Windows you may need to use <code>chrome.exe</code> instead</em>
-<strong>Firefox:</strong>
-Type this to url bar: <code>about:config</code>
-Then find <code>security.fileuri.strict_origin_policy</code> and make it <code>false</code>
-<strong>IE:</strong>
-meh...
-<strong>Others:</strong>
-Ask google
-            </pre>
+            <br><br><br>
             <!-- Accordion stuff -->
             <div class="accordion" id="accordionGroup">
               <div class="accordion-group">
@@ -149,25 +134,12 @@ Ask google
                 </div>
               </div>
 
-              <div class="accordion-group">
-                <div class="accordion-heading">
-                  <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordionGroup" href="#collapse2">
-                    What's that same-origin-policy stuff?
-                  </a>
-                </div>
-                <div id="collapse2" class="accordion-body collapse">
-                  <div class="accordion-inner">
-                    Well, it is complicated... Interested? Then: <a href="http://en.wikipedia.org/wiki/Same_origin_policy" target="_blank">Wikipedia</a>
-                  </div>
-                </div>
-              </div>
-
             </div>
             <!-- Accordion stuff ends -->
           </div>
         </div>
         <br>
-        <br>  
+        <br>
       </div> <!-- /container -->
 
     <!-- Le javascript
