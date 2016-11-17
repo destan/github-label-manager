@@ -58,16 +58,20 @@ $(document).ready(function () {
       }
     },
     beforeSend: function(xhr) {
-      var password = $('#githubPassword').val();
+      var password = $('#githubPassword').val().trim();
       loadingSemaphore.acquire();
-      xhr.setRequestHeader('Authorization', makeBasicAuth(targetUsername, password));
+      // only add authorization if a password is provided. Adding empty authorization header
+      //fails loading for public repos
+      if(password) {
+        xhr.setRequestHeader('Authorization', makeBasicAuth(targetUsername, password));
+      }
     }
   });
 
   /**
   * username: github username <required>
   * password: github password (cleartext) <required>
-  * mode: 
+  * mode:
   *       'list':
   *       'copy':
   * callback: as the name suggests...
@@ -76,13 +80,10 @@ $(document).ready(function () {
     $.ajax({
       type: 'GET',
       url: 'https://api.github.com/repos/' + username + '/' + repo + '/labels',
-      beforeSend: function(xhr) {
-        loadingSemaphore.acquire();
-      },
       success: function (response) {
         console.log("success: ");
         console.log(response);
-        
+
         if(response ){
           var labels = response;
           for (var i = labels.length - 1; i >= 0; i--) {
@@ -98,6 +99,15 @@ $(document).ready(function () {
           }//for
         }//if
 
+        if(typeof callback == 'function'){
+          callback(response);
+        }
+      },
+      error: function(response) {
+        if(response.status == 404) {
+          alert('Not found! If this is a private repo make sure you provide a password.');
+        }
+        
         if(typeof callback == 'function'){
           callback(response);
         }
@@ -271,7 +281,7 @@ $(document).ready(function () {
         //-----------------------------
         //well here goes the copy-paste because normal binding to 'change' doesn't work
         // on newElementEntry.children().filter(':input[orig-val]').change(function...
-        // since it is triggered programmatically  
+        // since it is triggered programmatically
         if($(el).val() == $(el).attr('orig-val')){
           $(el).parent().attr('action', 'none');
           $(el).parent().removeClass('uncommited');
@@ -349,7 +359,7 @@ $('#copyFromRepoButton').click(function(e) {
     if(username && repo){
       apiCallListLabels(username, repo, 'copy', function(response) {
         theButton.button('reset');
-      });//set addUncommited to true because those are coming from another repo 
+      });//set addUncommited to true because those are coming from another repo
     }
     else{
       alert("Please follow the format: \n\nusername:repo");
@@ -371,7 +381,7 @@ $('#commitButton').click(function(e) {
     commit();
   });
 
-  //Enable popovers 
+  //Enable popovers
   $('#targetUrl').popover({
     title: 'Example',
     content: '<code>github.com/destan/cevirgec</code> Then use <code>destan:cevirgec</code><br><em>Note that owner can also be an organization name.</em>',
@@ -409,13 +419,13 @@ $('#commitButton').click(function(e) {
   */
   function checkIfAnyActionNeeded() {
     var isNeeded = $('.label-entry:not([action="none"])').length > 0;
-    
+
     if(isNeeded){
       $('#commitButton').removeAttr('disabled');
       $('#commitButton').removeClass('disabled');
     }
     else{
-      $('#commitButton').attr('disabled', 'disabled'); 
+      $('#commitButton').attr('disabled', 'disabled');
     }
 
     return isNeeded;
