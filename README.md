@@ -1,7 +1,9 @@
 github-label-manager
 ====================
 
-See *help* section on http://destan.github.com/github-label-manager
+Heorku
+======
+Url :  https://github-label-manager-20scoops.herokuapp.com/
 
 License
 =======
