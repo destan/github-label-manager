@@ -179,16 +179,36 @@ $(document).ready(function () {
     return "Basic " + Base64.encode(username + ":" + password);
   }
 
-  function createNewLabelEntry(label, mode) {
+  function nameExists(name) {
+    return new Promise((resolve, reject) => {
+      var found = false;
+      $('.label-entry').each(function(index) {
+        var labelObject = serializeLabel($(this));
+        if (labelObject.name == name){
+          found = true;
+        };
+      });
+      resolve(found);
+      return found;
+    });
+  }
+
+  async function createNewLabelEntry(label, mode) {
 
     var action = ' action="none" ';
     var uncommitedSignClass = "";
 
     if(mode === 'copy' || mode === 'new'){
+      // see if the name already exists.  If it does the default action will be to skip it.
+      if(mode === 'copy'){
+        var exists = await nameExists(label.name);
+        if (exists) return;  // Don't create the label entry.
+      }
+     
       action = ' action="create" new="true" ';
       uncommitedSignClass = ' uncommited ';
     }
-
+   
     if(label === undefined || label === null){
       label = {
         name: "",
@@ -197,6 +217,7 @@ $(document).ready(function () {
     }
 
     var origNameVal = ' orig-val="' + label.name + '"';
+    var origDescriptionVal = ' orig-val="' + label.description + '"';
     var origColorVal = ' orig-val="' + label.color + '"';
 
     var newElementEntry = $('\
@@ -205,6 +226,7 @@ $(document).ready(function () {
       <span class="sharp-sign">#</span>\
       <input name="color" type="text" class="input-small color-box" placeholder="Color"  value="' + label.color + '" ' + origColorVal + '>\
       <button type="button" class="btn btn-danger delete-button">Delete</button>\
+      <input name="description" type="text" class="input-large" placeholder="Description" value="' + label.description + '" ' + origDescriptionVal + '>\
       </div>\
       ');
 
@@ -359,6 +381,8 @@ $('#copyFromRepoButton').click(function(e) {
     if(username && repo){
       apiCallListLabels(username, repo, 'copy', function(response) {
         theButton.button('reset');
+        $('#commitButton').removeAttr('disabled');
+        $('#commitButton').removeClass('disabled');
       });//set addUncommited to true because those are coming from another repo
     }
     else{
@@ -406,10 +430,11 @@ $('#commitButton').click(function(e) {
   /**
   * Makes a label entry out of a div having the class .label-entry
   */
-  function serializeLabel(jObjectLabelEntry) {
+ function serializeLabel(jObjectLabelEntry) {
     return {
       name: jObjectLabelEntry.children().filter('[name="name"]').val(),
       color: jObjectLabelEntry.children().filter('[name="color"]').val(),
+      description: jObjectLabelEntry.children().filter('[name="description"]').val(),
       originalName: jObjectLabelEntry.children().filter('[name="name"]').attr('orig-val')
     };
   }
