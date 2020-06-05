@@ -200,13 +200,15 @@ $(document).ready(function () {
 
     if(mode === 'copy' || mode === 'new'){
       // see if the name already exists.  If it does the default action will be to skip it.
-      var exists = await nameExists(label.name);
-      if (exists) return;  // Don't create the label entry.
-
+      if(mode === 'copy'){
+        var exists = await nameExists(label.name);
+        if (exists) return;  // Don't create the label entry.
+      }
+     
       action = ' action="create" new="true" ';
       uncommitedSignClass = ' uncommited ';
     }
-
+   
     if(label === undefined || label === null){
       label = {
         name: "",
